@@ -1,0 +1,43 @@
+Tu veux transformer ces données en un cahier de test structuré ? Voici une proposition :
+
+1. **Titre** : Cahier de test - Application Gestion
+
+2. **Objectif** : Vérifier le bon fonctionnement des modules décrits (Connexion, Dashboard, Clients, Sales).
+
+3. **Environnement** : Docker
+
+4. **Cas de test** :
+   - **Connexion**
+     - Vérifier que l'utilisateur peut s'authentifier avec email/mot de passe.
+     - Tester les permissions utilisateur (users → roles → permission).
+     - Class Token Inexistant
+
+   - **Dashboard**
+     - Vérifier le bon affichage des statistiques : tâches, leads, projets, clients.
+     - Tester la génération de graphiques (_createdGraph).
+     - Vérifier la liste des utilisateurs et des absents.
+
+   - **Clients**
+     - Tester l'insertion, la suppression et la récupération des clients.
+
+   - **Sales**
+     - Vérifier l'affichage des produits et des ventes en retard.
+     -WAITING CLIENT,CLOSED, NO CLIENT,
+     -RECHERCHE TACHE
+     -RANDOM STATUS
+
+    app/Http/Controllers/UsersController.php (taskData)
+
+    app/Http/Controllers/UsersController.php (leadData)
+
+
+
+  - **Task**
+    - Tester l'insertion, la suppression et la récupération des clients.
+    - Resolution Errors Ajax Blade
+    -WAITING CLIENT,CLOSED, NO CLIENT
+
+  -LEADS 
+
+     -DATA ERRORS
+Tu veux un format spécifique (tableau, Word, Markdown) ?

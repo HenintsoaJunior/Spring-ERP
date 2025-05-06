@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Demandes de Devis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div th:replace="fragments/header"></div>
+
+    <div class="form-container">
+        <div class="table-header">
+            <div class="table-icon">☙</div>
+            <h2 class="table-title">Sélectionner un Fournisseur</h2>
+        </div>
+
+        <!-- Message d'erreur ou de succès -->
+        <div th:if="${error}" th:text="${error}" style="color: red;"></div>
+        <div th:if="${message}" th:text="${message}" style="color: green;"></div>
+
+        <form th:action="@{/api/spring/fournisseur/quotation/request-quotation/filter}" method="post">
+            <table class="form-table">
+                <tr>
+                    <th><label for="supplier">Fournisseur:</label></th>
+                    <td>
+                        <select id="supplier" name="supplier">
+                            <option value="">Tous les fournisseurs</option>
+                            <option th:each="fournisseur : ${fournisseurs}" 
+                                    th:value="${fournisseur.name}"
+                                    th:text="${fournisseur.supplierName}"
+                                    th:selected="${selectedSupplier != null && selectedSupplier == fournisseur.name}">
+                            </option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="form-actions">
+                        <button type="submit" class="submit-btn"><i class="fa-solid fa-search"></i> Filtrer</button>
+                        <button type="reset" class="reset-btn"><i class="fa-solid fa-eraser"></i> Réinitialiser</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+    <div class="table-container">
+        <div class="table-header">
+            <div class="table-icon">🧾</div>
+            <h2 class="table-title">Liste demande devis</h2>
+        </div>
+
+        <h2>Liste des Demandes de Devis</h2>
+        <p th:if="${count != null}">Nombre de demandes: <span th:text="${count}"></span></p>
+
+        <div th:if="${quotations != null && !quotations.isEmpty()}">
+            <table border="1" cellpadding="5">
+                <thead>
+                    <tr>
+                        <th>Numéro</th>
+                        <th>Date</th>
+                        <th>Statut</th>
+                        <th>Articles</th>
+                        <th>Devis Fournisseurs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="quotation : ${quotations}">
+                        <td th:text="${quotation.name}"></td>
+                        <td th:text="${quotation.transactionDate}"></td>
+                        <td th:text="${quotation.status}"></td>
+                        <td>
+                            <button class="toggle-items-btn" th:data-quotation-id="${quotation.name}" onclick="toggleItems(this.getAttribute('data-quotation-id'))">
+                                Voir les articles (<span th:text="${quotation.items != null ? quotation.items.size() : 0}"></span>)
+                            </button>
+                        </td>
+                        <td>
+                            <button class="toggle-supplier-quotations-btn" th:data-quotation-id="${quotation.name}" onclick="toggleSupplierQuotations(this.getAttribute('data-quotation-id'))">
+                                Voir les devis fournisseurs (<span th:text="${quotation.supplierQuotations != null ? quotation.supplierQuotations.size() : 0}"></span>)
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Sections pour afficher les articles, fournisseurs et devis fournisseurs par demande -->
+            <div th:each="quotation : ${quotations}">
+                <div th:id="'items-' + ${quotation.name}" style="display: none; margin: 10px 0; padding: 10px; border: 1px solid #ccc;">
+                    <h3>Articles de la demande <span th:text="${quotation.name}"></span></h3>
+                    <table border="1" cellpadding="5" th:if="${quotation.items != null && !quotation.items.isEmpty()}">
+                        <thead>
+                            <tr>
+                                <th>Code Article</th>
+                                <th>Désignation</th>
+                                <th>Quantité</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item : ${quotation.items}">
+                                <td th:text="${item.itemCode}"></td>
+                                <td th:text="${item.itemName}"></td>
+                                <td th:text="${item.qty}"></td>
+                                <td>
+                                    <a th:href="@{'/api/spring/fournisseur/quotation/request-quotation/update-form'(quotationName=${quotation.name}, itemCode=${item.itemCode}, qty=${item.qty})}"
+                                       class="update-btn">
+                                        🛠️ Update
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p th:if="${quotation.items == null || quotation.items.isEmpty()}">Aucun article disponible.</p>
+                </div>
+
+                <div th:id="'supplier-quotations-' + ${quotation.name}" style="display: none; margin: 10px 0; padding: 10px; border: 1px solid #ccc;">
+                    <h3>Devis Fournisseurs de la demande <span th:text="${quotation.name}"></span></h3>
+                    <table border="1" cellpadding="5" th:if="${quotation.supplierQuotations != null && !quotation.supplierQuotations.isEmpty()}">
+                        <thead>
+                            <tr>
+                                <th>Nom Devis</th>
+                                <th>Fournisseur</th>
+                                <th>Nom Fournisseur</th>
+                                <th>Date Transaction</th>
+                                <th>Total Général</th>
+                                <th>Statut</th>
+                                <th>Articles</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="supplierQuotation : ${quotation.supplierQuotations}">
+                                <td th:text="${supplierQuotation.name}"></td>
+                                <td th:text="${supplierQuotation.supplier}"></td>
+                                <td th:text="${supplierQuotation.supplierName}"></td>
+                                <td th:text="${supplierQuotation.transactionDate}"></td>
+                                <td th:text="${supplierQuotation.grandTotal}"></td>
+                                <td th:text="${supplierQuotation.status}"></td>
+                                <td>
+                                    <ul>
+                                        <li th:each="item : ${supplierQuotation.items}">
+                                            <span th:text="${item.itemCode} + ' - ' + ${item.itemName} + ' (Qty: ' + ${item.qty} + ', Rate: ' + (${item.rate != null ? item.rate : 'N/A'}) + ', Amount: ' + (${item.amount != null ? item.amount : 'N/A'}) + ')'"></span>
+                                            <a th:href="@{/api/spring/fournisseur/quotation-devis/supplier-quotation/update-form(quotationName=${supplierQuotation.name},itemCode=${item.itemCode},qty=${item.qty},rate=${item.rate != null ? item.rate : 0},amount=${item.amount != null ? item.amount : 0})}"
+                                               class="update-btn"><i class="fa-solid fa-edit"></i> Update Supplier</a>
+                                        </li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p th:if="${quotation.supplierQuotations == null || quotation.supplierQuotations.isEmpty()}">Aucun devis fournisseur disponible.</p>
+                </div>
+            </div>
+        </div>
+
+        <p th:if="${quotations == null || quotations.isEmpty()}">Aucune demande de devis disponible.</p>
+    </div>
+
+    <div th:replace="fragments/footer"></div>
+
+    <script>
+        function toggleItems(quotationName) {
+            var itemsDiv = document.getElementById('items-' + quotationName);
+            if (itemsDiv) {
+                itemsDiv.style.display = itemsDiv.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        function toggleSupplierQuotations(quotationName) {
+            var supplierQuotationsDiv = document.getElementById('supplier-quotations-' + quotationName);
+            if (supplierQuotationsDiv) {
+                supplierQuotationsDiv.style.display = supplierQuotationsDiv.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+    </script>
+
+    <style>
+        .update-btn.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .update-btn {
+            margin-left: 10px;
+            text-decoration: none;
+            color: #007bff;
+            display: inline-block;
+        }
+        .update-btn i {
+            margin-right: 5px;
+        }
+        ul li {
+            margin-bottom: 10px;
+        }
+    </style>
+</body>
+</html>

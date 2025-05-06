@@ -1,0 +1,11 @@
+nom,prenom,sexe
+Dup,Jean,M
+Martinsss,Sophie,F
+Dubois,Pierre,M
+Lefebvre,Marie,F
+Bernard,Thomas,M
+Petit,Julie,F
+Moreau,Nicolas,M
+Robert,Isabelle,F
+Richard,David,M
+Simon,Laura,F

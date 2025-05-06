@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Demande de Devis</title>
+    <style>
+        /* Styles existants */
+        .update-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            font-size: 14px;
+            text-decoration: none;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        .update-btn:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .update-btn i {
+            font-size: 16px;
+        }
+
+        /* Style pour l'affichage en tableau */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        .items-table th, .items-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .items-table th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+        }
+
+        .items-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Style pour le numéro cliquable */
+        .clickable-number {
+            color: #007bff;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+
+        .clickable-number:hover {
+            color: #0056b3;
+        }
+
+        /* Style pour les détails de devis */
+        .quotation-details {
+            margin-top: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, margin-top 0.5s ease-out;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .quotation-details.active {
+            margin-top: 10px;
+            max-height: 1000px; /* Valeur suffisamment grande */
+            border: 1px solid #dee2e6;
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="fragments/header"></div>
+
+    <div class="form-container">
+        <div class="table-header">
+            <div class="table-icon">☙</div>
+            <h2 class="table-title">Sélectionner un Fournisseur</h2>
+        </div>
+        
+        <div class="error-message" th:if="${error}" th:text="${error}"></div>
+        <div class="success-message" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="success-message" th:if="${quotationMessage}" th:text="${quotationMessage}"></div>
+
+        <div th:if="${fournisseur != null}">
+            <p>Nombre de fournisseurs : <span th:text="${#lists.size(fournisseur)}"></span></p>
+        </div>
+        <div th:if="${fournisseur == null or fournisseur.isEmpty()}">
+            <p style="color: orange;">Aucun fournisseur disponible dans la liste.</p>
+        </div>
+
+        <form th:action="@{/api/spring/fournisseur/devis/filter}" method="post">
+            <table class="form-table">
+                <tr>
+                    <th><label for="supplier">Fournisseur:</label></th>
+                    <td>
+                        <select id="supplier" name="supplier" required>
+                            <option value="" disabled selected>Sélectionnez un fournisseur</option>
+                            <option th:each="fournisseur : ${fournisseur}"
+                                    th:value="${fournisseur.name}"
+                                    th:text="${fournisseur.supplierName}"></option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="form-actions">
+                        <button type="submit" class="submit-btn"><i class="fa-solid fa-search"></i> Filtrer</button>
+                        <button type="reset" class="reset-btn"><i class="fa-solid fa-eraser"></i> Réinitialiser</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+    <div class="table-container">
+        <div class="table-header">
+            <div class="table-icon">🧾</div>
+            <h2 class="table-title">Liste des Devis</h2>
+        </div>
+
+        <div th:if="${error != null}" style="color: red;">
+            <p th:text="${error}"></p>
+        </div>
+
+        <table th:if="${quotations != null and !quotations.isEmpty()}">
+            <thead>
+                <tr>
+                    <th>Numéro</th>
+                    <th>Fournisseur</th>
+                    <th>Date</th>
+                    <th>Montant</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="quotation, quotStat : ${quotations}">
+                    <!-- Numéro cliquable -->
+                    <td>
+                        <span class="clickable-number" 
+                              th:text="${quotation.name}"
+                              th:attr="data-quotation-id=${quotStat.index}"
+                              onclick="toggleQuotationDetails(this.getAttribute('data-quotation-id'))">
+                        </span>
+                    </td>
+                    <td th:text="${quotation.supplierName}"></td>
+                    <td th:text="${quotation.transactionDate}"></td>
+                    <td th:text="${quotation.grandTotal} + ' €'"></td>
+                    <td th:text="${quotation.status}"></td>
+                </tr>
+                <!-- Ligne pour les détails, qui s'affiche en dessous du devis correspondant -->
+                <tr th:each="quotation, quotStat : ${quotations}">
+                    <td colspan="5" style="padding: 0; border-top: none;">
+                        <div th:id="'quotation-details-' + ${quotStat.index}" class="quotation-details">
+                            <table class="items-table">
+                                <thead>
+                                    <tr>
+                                        <th>Article</th>
+                                        <th>Qté</th>
+                                        <th>Prix unitaire</th>
+                                        <th>Montant</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="item : ${quotation.items}">
+                                        <td th:text="${item.itemName}"></td>
+                                        <td th:text="${item.qty}"></td>
+                                        <td th:text="${item.rate} + ' €'"></td>
+                                        <td th:text="${item.amount} + ' €'"></td>
+                                        <td>
+                                            <a th:href="@{/api/spring/fournisseur/quotation-devis/supplier-quotation/update-form(quotationName=${quotation.name},itemCode=${item.itemCode},rate=${item.rate},qty=${item.qty},amount=${item.amount})}"
+                                               class="update-btn"><i class="fa-solid fa-edit"></i> Update</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p th:if="${quotations == null or quotations.isEmpty()}">Aucun devis disponible.</p>
+    </div>
+
+    <div th:replace="fragments/footer"></div>
+
+    <script>
+        function toggleQuotationDetails(id) {
+            const detailsElement = document.getElementById('quotation-details-' + id);
+            
+            // Masquer tous les autres détails ouverts
+            document.querySelectorAll('.quotation-details.active').forEach(item => {
+                if (item.id !== 'quotation-details-' + id) {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // Basculer l'état actuel
+            detailsElement.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

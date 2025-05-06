@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mettre à jour le prix unitaire</title>
+    <!-- Vos styles CSS ici -->
+    <style>
+        .error-message {
+            color: red;
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid red;
+            background-color: #ffe6e6;
+        }
+        .success-message {
+            color: green;
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid green;
+            background-color: #e6ffe6;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="fragments/header"></div>
+    <div class="form-container">
+        <div class="table-header">
+            <div class="table-icon">✎</div>
+            <h2 class="table-title">Mettre à jour le prix unitaire</h2>
+        </div>
+        <div class="error-message" th:if="${error}" th:text="${error}"></div>
+        <div class="success-message" th:if="${successMessage}" th:text="${successMessage}"></div>
+        
+        <form th:action="@{/api/spring/fournisseur/quotation/request-quotation/update}" method="post">
+            <input type="hidden" name="quotationName" th:value="${quotationName}"/>
+            <input type="hidden" name="itemCode" th:value="${itemCode}"/>
+            <table class="form-table">
+                <tr>
+                    <th><label for="rate">Prix unitaire (€):</label></th>
+                    <td>
+                        <input type="number" id="rate" name="rate" step="0.01" value="0"/>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Informations :</th>
+                    <td>
+                        <p th:text="'Quantité : ' + ${qty}"></p>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="form-actions">
+                        <button type="submit" class="submit-btn"><i class="fa-solid fa-save"></i> Mettre à jour</button>
+                        <a th:href="@{/api/spring/fournisseur/devis}" class="reset-btn">Annuler</a>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <div th:replace="fragments/footer"></div>
+</body>
+</html>

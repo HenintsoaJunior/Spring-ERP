@@ -1,0 +1,38 @@
+<div th:replace="fragments/header"></div>
+<div class="table-container">
+    <div class="table-header">
+        <div class="table-icon">☙</div>
+        <h2 class="table-title">Tableau Dynamique</h2>
+    </div>
+    <div class="table-controls">
+        <!-- Les contrôles de recherche et d'affichage peuvent être réactivés ici si besoin -->
+    </div>
+    <div th:if="${error != null}" style="color: red;">
+        <p th:text="${error}"></p>
+    </div>
+
+    <table th:if="${customers != null and not #lists.isEmpty(customers)}">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Propriétaire</th>
+                <th>Nom du Client</th>
+                <th>Type de Client</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="customer : ${customers}">
+                <td th:text="${customer.name}"></td>
+                <td th:text="${customer.emailId} ?: 'N/A'"></td>
+                <td th:text="${customer.owner}"></td>
+                <td th:text="${customer.customerName}"></td>
+                <td th:text="${customer.customerType}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p th:if="${customers == null or #lists.isEmpty(customers)}">Aucun client à afficher.</p>
+
+</div>
+<div th:replace="fragments/footer"></div>

@@ -1,0 +1,176 @@
+<div th:replace="fragments/header"></div>
+
+<div class="form-container">
+    <!-- Le code du formulaire reste inchangé -->
+    <div class="table-header">
+        <div class="table-icon">☙</div>
+        <h2 class="table-title">Filtrer les Commandes d'Achat</h2>
+    </div>
+    
+    <div class="error-message" th:if="${error}" th:text="${error}"></div>
+    <div class="success-message" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="success-message" th:if="${purchaseOrderMessage}" th:text="${purchaseOrderMessage}"></div>
+
+    <div th:if="${fournisseur != null}">
+        <p>Nombre de fournisseurs : <span th:text="${#lists.size(fournisseur)}"></span></p>
+    </div>
+    <div th:if="${fournisseur == null or fournisseur.isEmpty()}">
+        <p style="color: orange;">Aucun fournisseur disponible dans la liste.</p>
+    </div>
+
+    <form th:action="@{/api/spring/fournisseur/commande/filter}" method="post">
+        <table class="form-table">
+            <tr>
+                <th><label for="supplier">Fournisseur:</label></th>
+                <td>
+                    <select id="supplier" name="supplier">
+                        <option value="" selected>Tous les fournisseurs</option>
+                        <option th:each="fournisseur : ${fournisseur}"
+                                th:value="${fournisseur.name}"
+                                th:text="${fournisseur.supplierName}"></option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="status_filter">Statut:</label></th>
+                <td>
+                    <select id="status_filter" name="status_filter">
+                        <option value="" selected>Tous</option>
+                        <option value="received">Reçu</option>
+                        <option value="paid">Payé</option>
+                        <option value="finish">Reçu et Payé</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="form-actions">
+                    <button type="submit" class="submit-btn"><i class="fa-solid fa-search"></i> Filtrer</button>
+                    <button type="reset" class="reset-btn"><i class="fa-solid fa-eraser"></i> Réinitialiser</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<div class="table-container">
+    <div class="table-header">
+        <div class="table-icon">📦</div>
+        <h2 class="table-title">Liste des Commandes d'Achat</h2>
+    </div>
+
+    <div th:if="${purchaseOrderErrors != null}" style="color: red;">
+        <p th:text="${purchaseOrderErrors}"></p>
+    </div>
+
+    <table th:if="${purchaseOrders != null and !purchaseOrders.isEmpty()}">
+        <thead>
+            <tr>
+                <th>Numéro</th>
+                <th>Fournisseur</th>
+                <th>Date</th>
+                <th>Montant</th>
+                <th>Statut</th>
+                <th>Reçu</th>
+                <th>Payé</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="order : ${purchaseOrders}">
+                <td>
+                    <a href="#" class="toggle-items" th:attr="data-order-id=${order.name}" th:text="${order.name}"></a>
+                </td>
+                <td th:text="${order.supplierName}"></td>
+                <td th:text="${order.transactionDate}"></td>
+                <td th:text="${order.grandTotal} + ' €'"></td>
+                <td th:text="${order.status}"></td>
+                <td>
+                    <span class="status-received" th:classappend="${order.isReceived} ? 'yes' : 'no'"> 
+                        <i class="fa-solid" th:classappend="${order.isReceived} ? 'fa-check' : 'fa-times'"></i>
+                        <span th:text="${order.isReceived} ? 'Oui' : 'Non'"></span>
+                    </span>
+                </td>
+                <td>
+                    <span class="status-paid" th:classappend="${order.isPaid} ? 'yes' : 'no'">
+                        <i class="fa-solid" th:classappend="${order.isPaid} ? 'fa-check' : 'fa-times'"></i>
+                        <span th:text="${order.isPaid} ? 'Oui' : 'Non'"></span>
+                    </span>
+                </td>
+            </tr>
+            <tr th:each="order : ${purchaseOrders}" class="items-row" th:id="'items-' + ${order.name}" style="display: none;">
+                <td colspan="7">
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th>Article</th>
+                                <th>Quantité</th>
+                                <th>Montant</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item : ${order.items}">
+                                <td th:text="${item.itemName}"></td>
+                                <td th:text="${item.qty}"></td>
+                                <td th:text="${item.amount} + ' €'"></td>
+                            </tr>
+                            <tr th:if="${order.items == null or order.items.isEmpty()}">
+                                <td colspan="3">Aucun article disponible.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p th:if="${purchaseOrders == null or purchaseOrders.isEmpty()}">Aucune commande d'achat disponible.</p>
+</div>
+
+<div th:replace="fragments/footer"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.toggle-items').forEach(function (element) {
+        element.addEventListener('click', function (e) {
+            e.preventDefault();
+            var orderId = this.getAttribute('data-order-id');
+            var itemsRow = document.getElementById('items-' + orderId);
+            if (itemsRow.style.display === 'none') {
+                itemsRow.style.display = 'table-row';
+            } else {
+                itemsRow.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.items-row {
+    background-color: #f9f9f9;
+}
+.toggle-items {
+    color: #007bff;
+    text-decoration: none;
+    cursor: pointer;
+}
+.toggle-items:hover {
+    text-decoration: underline;
+}
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+}
+.items-table th, .items-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+.items-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+.items-table tr:nth-child(even) {
+    background-color: #fafafa;
+}
+</style>

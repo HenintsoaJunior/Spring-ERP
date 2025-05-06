@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Import de Fichier</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- API Key/Secret injectées dynamiquement depuis le serveur -->
+  <meta name="erpnext-api-key" th:content="${apiKey}" />
+  <meta name="erpnext-api-secret" th:content="${apiSecret}" />
+  
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+  
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    .import-container {
+      max-width: 800px;
+      margin: 30px auto;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.15);
+      padding: 30px;
+    }
+    
+    .import-header {
+      margin-bottom: 30px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 20px;
+    }
+    
+    .import-header h2 {
+      font-weight: 600;
+      color: #000;
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+    
+    .import-header p {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .form-group {
+      margin-bottom: 25px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #333;
+      font-size: 14px;
+    }
+    
+    .file-input-container {
+      position: relative;
+      border: 2px dashed #ddd;
+      border-radius: 6px;
+      padding: 28px 15px;
+      text-align: center;
+      transition: all 0.3s;
+      background-color: #fafafa;
+    }
+    
+    .file-input-container:hover {
+      border-color: #bbb;
+      background-color: #f5f5f5;
+    }
+    
+    .file-input-container input[type="file"] {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    
+    .file-placeholder {
+      color: #999;
+      font-size: 14px;
+    }
+    
+    .file-placeholder i {
+      font-size: 24px;
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    .file-placeholder.file-selected {
+      color: #333;
+    }
+    
+    .btn-import {
+      background-color: #000;
+      border: none;
+      color: #fff;
+      padding: 12px 30px;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+      width: 100%;
+      margin-top: 10px;
+    }
+    
+    .btn-import:hover {
+      background-color: #333;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-import:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .import-result {
+      margin-top: 30px;
+    }
+    
+    .alert {
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      border-left: 5px solid;
+    }
+    
+    .alert-info {
+      background-color: #f8f9fa;
+      border-left-color: #0dcaf0;
+      color: #055160;
+    }
+    
+    .alert-success {
+      background-color: #f8f9fa;
+      border-left-color: #198754;
+      color: #0f5132;
+    }
+    
+    .alert-danger {
+      background-color: #f8f9fa;
+      border-left-color: #dc3545;
+      color: #842029;
+    }
+    
+    .file-name {
+      display: inline-block;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: middle;
+      font-size: 13px;
+      color: #333;
+      margin-left: 10px;
+    }
+    
+    /* Styles pour le tableau d'erreurs */
+    .error-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 13px;
+    }
+    
+    .error-table th, .error-table td {
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .error-table th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .error-table tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+    
+    .error-table tr:hover {
+      background-color: #f1f1f1;
+    }
+    
+    .error-summary {
+      margin-bottom: 10px;
+      font-weight: 500;
+      color: #842029;
+    }
+  </style>
+</head>
+<body>
+  <div class="import-container">
+    <div class="import-header">
+      <h2>Import de Données</h2>
+      <p>Sélectionnez les fichiers CSV à importer dans ERPNext</p>
+    </div>
+    
+    <div class="form-group">
+      <label for="csv-file-1">Fichier CSV 1</label>
+      <div class="file-input-container">
+        <input type="file" id="csv-file-1" accept=".csv" />
+        <div class="file-placeholder" id="placeholder-1">
+          <i class="fas fa-file-csv"></i>
+          Cliquez ou glissez le fichier CSV ici
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="csv-file-2">Fichier CSV 2</label>
+      <div class="file-input-container">
+        <input type="file" id="csv-file-2" accept=".csv" />
+        <div class="file-placeholder" id="placeholder-2">
+          <i class="fas fa-file-csv"></i>
+          Cliquez ou glissez le fichier CSV ici
+        </div>
+      </div>
+    </div>
+    
+    <button id="upload-btn" class="btn-import">Importer les Données</button>
+    
+    <div id="import-result" class="import-result"></div>
+  </div>
+
+  <script>
+    function getAuthHeader() {
+      const apiKey = document.querySelector('meta[name="erpnext-api-key"]')?.content;
+      const apiSecret = document.querySelector('meta[name="erpnext-api-secret"]')?.content;
+
+      if (!apiKey || !apiSecret) return null;
+      return "token " + apiKey + ":" + apiSecret;
+    }
+
+    async function uploadFile(file) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("is_private", "0");
+
+      const auth = getAuthHeader();
+      if (!auth) throw new Error("Clés API manquantes. Veuillez vous connecter.");
+
+      const response = await fetch("http://erpnext.localhost:8000/api/method/upload_file", {
+        method: "POST",
+        headers: { 'Authorization': auth },
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (!result.message || !result.message.name) {
+        throw new Error("Fichier non accepté : " + JSON.stringify(result));
+      }
+
+      return result.message.name;
+    }
+
+    async function importFiles(fileIds) {
+      const auth = getAuthHeader();
+      if (!auth) throw new Error("Clés API manquantes. Veuillez vous connecter.");
+
+      const response = await fetch("http://erpnext.localhost:8000/api/method/erpnext.controllers.data.ImportController.import_csv_files", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": auth
+        },
+        body: JSON.stringify({ files_data: JSON.stringify(fileIds) })
+      });
+
+      const result = await response.json();
+      return result;
+    }
+    
+    // Fonction pour générer un tableau d'erreurs
+    function generateErrorTable(errors) {
+      if (!errors || !errors.length) return '';
+      
+      let tableHTML = `
+        <div class="error-summary">Des erreurs de validation ont été détectées (${errors.length} erreurs)</div>
+        <table class="error-table">
+          <thead>
+            <tr>
+              <th>Fichier</th>
+              <th>Ligne</th>
+              <th>Champ</th>
+              <th>Valeur</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      errors.forEach(error => {
+        if (error.details && error.details.length) {
+          error.details.forEach(detail => {
+            tableHTML += `
+              <tr>
+                <td>${detail.file || '-'}</td>
+                <td>${detail.row || '-'}</td>
+                <td>${detail.field || '-'}</td>
+                <td>${detail.value || '-'}</td>
+                <td>${detail.message || '-'}</td>
+              </tr>
+            `;
+          });
+        }
+      });
+      
+      tableHTML += `
+          </tbody>
+        </table>
+      `;
+      
+      return tableHTML;
+    }
+
+    // Update file placeholders when files are selected
+    document.getElementById('csv-file-1').addEventListener('change', function() {
+      const fileName = this.files[0] ? this.files[0].name : null;
+      const placeholder = document.getElementById('placeholder-1');
+      if (fileName) {
+        placeholder.classList.add('file-selected');
+        placeholder.innerHTML = `
+          <i class="fas fa-file-csv"></i>
+          <span class="file-name">${fileName}</span>
+        `;
+      } else {
+        placeholder.classList.remove('file-selected');
+        placeholder.innerHTML = `
+          <i class="fas fa-file-csv"></i>
+          Cliquez ou glissez le fichier CSV ici
+        `;
+      }
+    });
+
+    document.getElementById('csv-file-2').addEventListener('change', function() {
+      const fileName = this.files[0] ? this.files[0].name : null;
+      const placeholder = document.getElementById('placeholder-2');
+      if (fileName) {
+        placeholder.classList.add('file-selected');
+        placeholder.innerHTML = `
+          <i class="fas fa-file-csv"></i>
+          <span class="file-name">${fileName}</span>
+        `;
+      } else {
+        placeholder.classList.remove('file-selected');
+        placeholder.innerHTML = `
+          <i class="fas fa-file-csv"></i>
+          Cliquez ou glissez le fichier CSV ici
+        `;
+      }
+    });
+
+    document.getElementById("upload-btn").addEventListener("click", async () => {
+      const fileInput1 = document.getElementById("csv-file-1");
+      const fileInput2 = document.getElementById("csv-file-2");
+      const resultEl = document.getElementById("import-result");
+      const uploadBtn = document.getElementById("upload-btn");
+
+      resultEl.innerHTML = "";
+      uploadBtn.disabled = true;
+
+      if (!fileInput1.files.length || !fileInput2.files.length) {
+        resultEl.innerHTML = `
+          <div class="alert alert-danger">
+            <div style="display: flex; align-items: center;">
+              <div style="margin-right: 15px;">
+                <i class="fas fa-exclamation-circle" style="font-size: 20px;"></i>
+              </div>
+              <div>Veuillez sélectionner les deux fichiers CSV.</div>
+            </div>
+          </div>
+        `;
+        uploadBtn.disabled = false;
+        return;
+      }
+
+      const file1 = fileInput1.files[0];
+      const file2 = fileInput2.files[0];
+
+      // Validate file size (max 10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file1.size > maxSize || file2.size > maxSize) {
+        resultEl.innerHTML = `
+          <div class="alert alert-danger">
+            <div style="display: flex; align-items: center;">
+              <div style="margin-right: 15px;">
+                <i class="fas fa-exclamation-circle" style="font-size: 20px;"></i>
+              </div>
+              <div>La taille d'un fichier dépasse la limite autorisée de 10MB.</div>
+            </div>
+          </div>
+        `;
+        uploadBtn.disabled = false;
+        return;
+      }
+
+      try {
+        resultEl.innerHTML = `
+          <div class="alert alert-info">
+            <div style="display: flex; align-items: center;">
+              <div style="margin-right: 15px;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 20px;"></i>
+              </div>
+              <div>Téléchargement des fichiers en cours...</div>
+            </div>
+          </div>
+        `;
+
+        const fileName1 = await uploadFile(file1);
+        const fileName2 = await uploadFile(file2);
+
+        resultEl.innerHTML = `
+          <div class="alert alert-info">
+            <div style="display: flex; align-items: center;">
+              <div style="margin-right: 15px;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 20px;"></i>
+              </div>
+              <div>Import des données en cours...</div>
+            </div>
+          </div>
+        `;
+
+        const fileIds = {
+          input1: fileName1,
+          input2: fileName2
+        };
+        const importResult = await importFiles(fileIds);
+
+        if (importResult.message && importResult.message.status === 'success') {
+          resultEl.innerHTML = `
+            <div class="alert alert-success">
+              <div style="display: flex; align-items: center;">
+                <div style="margin-right: 15px;">
+                  <i class="fas fa-check-circle" style="font-size: 20px;"></i>
+                </div>
+                <div>${importResult.message.data.message}</div>
+              </div>
+            </div>
+          `;
+        } else if (importResult.message && importResult.message.status === 'errors') {
+          // Affichage des erreurs dans un tableau
+          const errorData = importResult.message.errors || [];
+          
+          resultEl.innerHTML = `
+            <div class="alert alert-danger">
+              <div style="display: flex; align-items: center;">
+                <div style="margin-right: 15px;">
+                  <i class="fas fa-exclamation-circle" style="font-size: 20px;"></i>
+                </div>
+                <div>Échec de l'importation</div>
+              </div>
+              ${generateErrorTable(errorData)}
+            </div>
+          `;
+        } else {
+          throw new Error(JSON.stringify(importResult.message || "Erreur lors de l'importation"));
+        }
+      } catch (error) {
+        // Tenter de parser l'erreur au cas où c'est une chaîne JSON
+        let errorMessage = error.message;
+        try {
+          // Vérifier si l'erreur contient une chaîne JSON
+          if (error.message.includes('{"status":"errors"')) {
+            const errorData = JSON.parse(error.message);
+            if (errorData.status === 'errors' && errorData.errors) {
+              resultEl.innerHTML = `
+                <div class="alert alert-danger">
+                  <div style="display: flex; align-items: center;">
+                    <div style="margin-right: 15px;">
+                      <i class="fas fa-exclamation-circle" style="font-size: 20px;"></i>
+                    </div>
+                    <div>Échec de l'importation</div>
+                  </div>
+                  ${generateErrorTable(errorData.errors)}
+                </div>
+              `;
+              uploadBtn.disabled = false;
+              return;
+            }
+          }
+        } catch (parseError) {
+          // Si le parsing échoue, on utilise le message d'erreur original
+          console.error("Erreur lors du parsing de l'erreur:", parseError);
+        }
+        
+        resultEl.innerHTML = `
+          <div class="alert alert-danger">
+            <div style="display: flex; align-items: center;">
+              <div style="margin-right: 15px;">
+                <i class="fas fa-exclamation-circle" style="font-size: 20px;"></i>
+              </div>
+              <div>${errorMessage}</div>
+            </div>
+          </div>
+        `;
+        console.error(error);
+      } finally {
+        uploadBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

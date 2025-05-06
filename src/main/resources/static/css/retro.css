@@ -1,0 +1,148 @@
+        /* Container principal */
+        .table-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #000000;
+            padding: 20px;
+        }
+
+        /* Alertes */
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #d93025;
+            background-color: #fce8e6;
+            color: #d93025;
+            font-size: 11pt;
+        }
+
+        /* Carte */
+        .card {
+            border: none;
+        }
+
+        .card-header {
+            border-bottom: 2px solid #000000;
+            padding: 10px 0;
+            background: none;
+            margin-bottom: 20px;
+        }
+
+        .card-header h2 {
+            font-size: 18pt;
+            color: #000000;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .card-body {
+            padding: 0;
+        }
+
+        /* Typographie */
+        h3 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 20px 0 10px;
+            border-bottom: 1px solid #000000;
+            padding-bottom: 5px;
+        }
+
+        p {
+            margin-bottom: 8px;
+            font-size: 11pt;
+        }
+
+        p strong {
+            font-weight: bold;
+            min-width: 120px;
+            display: inline-block;
+        }
+
+        /* Layout */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+
+        .mt-4 {
+            margin-top: 30px;
+        }
+
+        /* Tableaux */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        .table th,
+        .table td {
+            padding: 8px;
+            border: 1px solid #000000;
+            text-align: left;
+            font-size: 11pt;
+        }
+
+        .table th {
+            background-color: #e6e6e6;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .table td {
+            vertical-align: top;
+        }
+
+        .table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Total */
+        .invoice-total {
+            text-align: right;
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 12pt;
+            border-top: 2px solid #000000;
+            padding-top: 10px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+            }
+
+            .col-md-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+                margin-bottom: 15px;
+            }
+
+            .card-header h2 {
+                font-size: 16pt;
+            }
+
+            .table th,
+            .table td {
+                font-size: 10pt;
+                padding: 6px;
+            }
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+            .table-container {
+                border: none;
+            }
+        }

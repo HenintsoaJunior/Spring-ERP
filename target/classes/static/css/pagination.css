@@ -1,0 +1,81 @@
+/* Style pour le conteneur principal de pagination */
+.pagination {
+    font-family: 'Arial', sans-serif;
+    max-width: 100%;
+    margin: 20px auto;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Style pour les infos de pagination */
+  .pagination p {
+    margin: 5px 0;
+    color: #6c757d;
+    font-size: 14px;
+    display: inline-block;
+    margin-right: 15px;
+  }
+  
+  .pagination span {
+    font-weight: bold;
+    color: #495057;
+  }
+  
+  /* Container pour les contrôles de pagination */
+  .pagination-controls {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #dee2e6;
+    text-align: center;
+  }
+  
+  /* Style pour les liens de pagination */
+  .pagination-controls a {
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 0 3px;
+    color: #007bff;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  
+  /* Style pour le lien de la page active */
+  .pagination-controls a.active {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+    cursor: default;
+  }
+  
+  /* Style pour les liens au survol */
+  .pagination-controls a:hover:not(.active) {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    color: #0056b3;
+  }
+  
+  /* Style pour les boutons précédent/suivant */
+  .pagination-controls a:first-child,
+  .pagination-controls a:last-child {
+    padding: 6px 15px;
+    font-weight: bold;
+  }
+  
+  /* Responsive design pour les petits écrans */
+  @media (max-width: 576px) {
+    .pagination p {
+      display: block;
+      margin-right: 0;
+    }
+    
+    .pagination-controls {
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: 10px;
+    }
+  }
